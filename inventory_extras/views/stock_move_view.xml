@@ -1,0 +1,32 @@
+<openerp>
+    <data>
+        <record id="view_move_picking_tree" model="ir.ui.view">
+            <field name="name">stock.move.form</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_picking_tree" />
+            <field name="arch" type="xml">
+                <xpath expr="//tree[1]/field[@name='product_uom']" position="after">
+                    <field name="location_id" readonly='0' attrs="{'readonly': [('state','not in',['draft','confirmed','waiting'])]}"/>
+                    <field name="location_dest_id" attrs="{'readonly': [('state','not in',['draft','confirmed','waiting'])]}"/>
+
+                   
+                    <!-- #########################   temp   ######################## -->
+
+                    <!-- <field name="located" widget="many2many_tags"/> -->
+                    
+                    <field name="quantity_available_loc_ids" widget="many2many_tags" style="color: #009999 !important; background:#88e7e7 !important;"> 
+                        <tree>
+                            <field name="location_name"/>
+                            <field name="quantity"/>
+                        </tree>
+                    </field>
+
+                    <field name="short_name_loc_quantity" readonly="1"  style="color: #009999 !important; background:#88e7e7 !important;" />
+                    <field name="choose_loc_from"/>
+
+                </xpath>
+            </field>
+         </record>
+
+    </data>
+</openerp>

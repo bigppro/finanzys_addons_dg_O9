@@ -33,11 +33,6 @@ class StockMove(models.Model):
     #_name = 'stock.move'
     _inherit = 'stock.move'
 
-    quantity_available_loc_ids = fields.Many2many('stock.quant', string = "Disponibilidad", compute = '_get_available',
-                                                help="Almacenes que tienen disponible este producto.")
-    quantity_available_loc_ids2 = fields.Many2many('stock.quant', string = "Disponibles quants", compute = '_get_available',
-                                                help="Almacenes que tienen disponible este producto.")
-    limit_to_show = fields.Char(related = 'picking_id.default_qtity_show')
    
     def _get_default_color(self):
         return randint(1, 11)
@@ -45,7 +40,7 @@ class StockMove(models.Model):
 
     @api.onchange('product_id')
     @api.depends('product_id')
-    @api.one
+    @api.model
     def _get_disponibilidad(self):
         """ for rec in self:
             if rec.qty_available > 0: """
@@ -54,11 +49,10 @@ class StockMove(models.Model):
 
 
     @api.onchange('product_id')
-    @api.depends('product_id','quantity_available_loc_ids2', 'choose_loc_from2', 'product_uom_qty', 'location_id')
+    @api.depends('product_id','quantity_available_loc_ids2', 'choose_loc_from2', 'product_uom_qty')
     @api.one
     def _calculate_choose_loc_from(self):
         if self.quantity_available_loc_ids2:
-            #ubicaciones disponibles globales
             loc_ids = []
             loc_to_calculate = []
 
@@ -69,62 +63,10 @@ class StockMove(models.Model):
             _logger.info("\nloc_ids\n")
             _logger.info(loc_ids) """
 
-            loc_all = self.env['stock.quant'].search([('location_id', 'in', loc_ids)], order='qty desc')
+            loc_to_calculate = self.env['stock.quant'].search([('location_id', 'in', loc_ids)], order='qty desc')
                                                                
-            _logger.info("\nloc_all\n")
-            _logger.info(loc_all)
-
-            """ have_child = True
-            all_childs = []
-            picking = self.env['stock.picking'].search([('')])
-            this_wh = self.location_id
-            n = 0
-            while have_child = True: """
-                
-
-            #loc_first_ids = self.env['stock.location'].search([('id', 'in', )])
-
-            # ubicaciones cercanas (para calcular primero) (tomando el almacen elegido en la transferencia: "Source Location Zone")
-            loc_to_calculate_first = self.env['stock.quant'].search([('location_id', '=', self.location_id.id),
-                                                                     ('product_id', '=', self.product_id.id),
-                                                                     ('qty', '>', 0)], order='qty desc')
-
-            _logger.info("\nloc_to_calculate_first\n")
-            _logger.info(loc_to_calculate_first)
-
-            ordened_loc = []
-            orden_first = []
-            orden_second = []
-
-            if len(loc_to_calculate_first) > 0:
-                for index, loc_orden in enumerate(loc_all):
-                    if loc_orden[index] in loc_to_calculate_first:
-                        orden_first.append(loc_orden[index])
-                    else:
-                        orden_second.append(loc_orden[index])
-                ordened_loc = [orden_first, orden_second]
-            else:
-                ordened_loc = loc_all
-
-            loc_to_calculate = ordened_loc
-
             _logger.info("\nloc_to_calculate\n")
             _logger.info(loc_to_calculate)
-
-            record_to_update_loc_ids = []
-            for index,record_to_update in enumerate(loc_to_calculate):
-                record_to_update.temp_numerate = index
-                record_to_update_loc_ids.append(record_to_update.location_id.id)
-
-            loc_to_calculate = self.env['stock.quant'].search([('location_id', 'in', record_to_update_loc_ids)], order='qty desc') #.sort(key=lambda x: x.temp_numerate, reverse=True) 
-
-            _logger.info("\nloc_to_calculate after enumerate\n")
-            _logger.info(loc_to_calculate)
-
-            ################# prueba ####################
-            for prueba in loc_all:
-                _logger.info("\nloc_all temp_enumerate\n")
-                _logger.info(prueba.temp_numerate)                     
 
             loc_qty_sum_ok = []
             x = 0
@@ -163,14 +105,18 @@ class StockMove(models.Model):
     def _inverse_calculate_choose_loc_from(self):
         pass
 
-    coments = fields.Text(string = "Comentarios")
 
+    quantity_available_loc_ids = fields.Many2many('stock.quant', string = "Disponibilidad", compute = '_get_available',
+                                                help="Almacenes que tienen disponible este producto.")
+    quantity_available_loc_ids2 = fields.Many2many('stock.quant', string = "Disponibles quants", compute = '_get_available',
+                                                help="Almacenes que tienen disponible este producto.", store = True)
+    limit_to_show = fields.Char(related = 'picking_id.default_qtity_show')
     color = fields.Integer(string='Color Index', default=_get_default_color)
-    disponibilidad_quant = fields.Boolean('Disponibilidad Boolean', compute = "_get_disponibilidad", default = False)#, default = False)
+    disponibilidad_quant = fields.Boolean('Disponibilidad', compute = "_get_disponibilidad", default = False)#, default = False)
     """ choose_loc_from = fields.Many2many(related = 'quantity_available_loc_ids2', readonly = True
                                                 help="Elija el o los almacenes desde donde desea sea retirada la mercancia.") """ #'stock.quant', readonly = False, domain= [('id', 'in', quantity_available_loc_ids)], default = default_choose_loc_from, change_default=True)
     choose_loc_from2 = fields.Many2many('stock.quant', compute = '_calculate_choose_loc_from', inverse='_inverse_calculate_choose_loc_from',
-                        required = True, store = True, string = "Ubicaciones Salida",
+                        required = True, store = True, 
                         help="""* Esta campo elije la o las ubicaciones de salida mas cercana(s) desde donde se estaría realizando el conduce.
                               \n* Para que esta función automática pueda funcionar; debe asignar las asociaciones de las ubicaciones/almacenes 
                               donde se especifica las ubicaciones mas próximos entre ellas. Ej: Contenedor 15; cercanos: (13,14,16,17) ya que 
@@ -211,8 +157,8 @@ class StockMove(models.Model):
                 if i['qty_on_hand'] > 0:
                     available_locations_ids.append(i['stock_location'])
 
-            self.quantity_available_loc_ids = self.env['stock.quant'].search([('location_id', 'in', available_locations_ids)],order='temp_numerate desc', limit=int(self.limit_to_show))#,order='qty')
-            self.quantity_available_loc_ids2 = self.env['stock.quant'].search([('location_id', 'in', available_locations_ids)],order='temp_numerate desc')#,order='qty')
+            #self.quantity_available_loc_ids = self.env['stock.quant'].search([('location_id', 'in', available_locations_ids)],order='qty desc', limit=int(self.limit_to_show))#,order='qty')
+            self.quantity_available_loc_ids2 = self.env['stock.quant'].search([('location_id', 'in', available_locations_ids)],order='qty desc')#,order='qty')
                 
 
     #TODO talvez deba independizar el short_name_loc_quantitys para que no afecte otros registros en _rec_name del stock.quant
@@ -234,7 +180,6 @@ class StockQuant(models.Model):
 
     location_name = fields.Char(related='location_id.name')
     short_names_locs_quantitys = fields.Char(string = "Disponibilidad", compute = "compute_short_loc")
-    temp_numerate = fields.Integer('para ordenar temporalmente')
 
     @api.depends('location_id')
     @api.one
@@ -251,7 +196,7 @@ class StockLocation(models.Model):
 
     nearby_locs = fields.One2many('stock.location', 'location_id', string = "Ubicaciones cercanas", 
                                  help = """ Especificar una o varias ubicaciones que esten ubicadas proximo a este almacen o ubicacion
-                                 para que el sistema pueda utilizarlo a la hora de determinar la ruta mas cercana de despacho.""")
+                                            para que el sistema pueda utilizarlo a la hora de determinar la ruta mas cercana de despacho""")
 
     def _get_default_color(self):
         return randint(0, 11)

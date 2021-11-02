@@ -24,7 +24,7 @@
 
     # any module necessary for this one to work correctly
     'depends': ['base', 'stock', 'product',
-    'account', 'mail', 'cybro_product_stock_balance'],
+    'account', 'mail',],
 
     # always loaded
     'data': [

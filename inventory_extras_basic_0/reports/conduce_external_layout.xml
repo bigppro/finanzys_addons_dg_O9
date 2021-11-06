@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <template id="conduce_external_layout">
+            <t t-if="not o and doc">
+                <t t-set="o" t-value="doc"/>
+            </t>
+            <t t-if="o and 'company_id' in o">
+                <t t-set="company" t-value="o.company_id"></t>
+            </t>
+            <t t-if="not o or not 'company_id' in o">
+                <t t-set="company" t-value="res_company"></t>
+            </t>
+
+            <t t-call="reporte_conduce.conduce_external_layout_header" />
+            <t t-raw="0" />
+            <t t-call="reporte_conduce.conduce_external_layout_footer" />
+        </template>
+
+        <template id="conduce_external_layout_header">
+            <div class="header">
+                <div class="row">
+                     <div>
+                        <img src="sale/static/img/dg_logo.png" width="250" height="60"/>
+                        <img src="sale/static/img/lcdl.png" width="250" height="60" style="float: right"/>
+                     </div>
+                </div>
+                <div style="float: left; font-size: 15px"><strong>RNC: </strong>130571872</div>
+            </div>
+        </template>
+
+        <template id="conduce_external_layout_footer">
+           <div class="footer" >
+                <!-- FIRST ROW-->
+                <div class="row" style="font-size: 8px; margin-top: -3px; margin-bottom: 5px">
+                    <p style="margin: 1px; padding: -2px">Nota:</p>
+                    <p style="margin: 1px; padding: -2px">a- Es responsabilidad del cliente verificar los productos al momento de ser entregados.</p>
+                    <p style="margin: 1px; padding: -2px">b- No se aceptan devoluciones de mercancías rotas, dañadas o incompletas una vez sean entregadas y firmadas en conformidad por el cliente.</p>
+                    <p style="margin: 1px; padding: -2px">c- Para pedidos entregados en Dos García SRL, no se aceptarán reclamos por diferencias entre lo entregado y lo recibido una vez el cliente haya abandonado las instalaciones.</p>
+                    <p style="margin: 1px; padding: -2px">d- Dos García SRL se reserva el derecho de responsabilidad por las condiciones de entrega y pérdida de mercancía entregada a terceros.</p>
+                    <p style="margin: 1px; padding: -2px">e- Se cobrará el 20% del costo del producto por cajas maltratadas o no devueltas por concepto de muestras.</p>
+                </div>
+        
+			<!-- SECOND ROW -->
+                <div class="row">
+
+                    <div style="float: left">
+                        <div style="margin-top: 15px"><strong>_____________________________________________</strong></div>
+                        <div style="margin-left: 65px"><strong>PREPARADO POR</strong></div>
+                    </div>
+                    
+                    <div style="float: right; margin-top: 15px">
+                        <div><strong>_____________________________________________</strong></div>
+                        <div style="margin-left: 60px"><strong>NOMBRE Y CÉDULA DEL CLIENTE</strong></div>
+                    </div>
+
+                </div>			
+                <!-- THIRD ROW -->
+                <div class="row" style="font-size: 10px; text-align: center">
+				<p style="margin: 1px; padding: -2px; margin-bottom: -3px">Sucs: Principal – C/21 No. 11, Villa Aura, Sto Dgo Oeste, Sto Dgo<br/>Barahona – C/Barahona, No. 297, Villa Consuelo, D. N., Sto Dgo<br/>Charles Summer – Av. Charles Summer, No. 51, D. N., Sto Dgo</p>
+				<p style="margin: 1px; padding: -2px">Teléfono: 809-379-2151, E-mail: info@lacasadelled.net, Webs: www.dosgarcia.com; www.lacasadeleled.net ; www.lacasadelled.com.do</p>
+			</div>
+                
+                <t t-if="company.custom_footer">
+                    <span t-raw="company.rml_footer"/>
+                </t>
+                
+                <div style="float: right">
+                <ul class="list-inline">
+                    <li>Page:</li>
+                    <li><span class="page"/></li>
+                    <li>/</li>
+                    <li><span class="topage"/></li>
+                </ul>
+                </div>
+
+            </div>
+        </template>
+
+    </data>
+</openerp>
